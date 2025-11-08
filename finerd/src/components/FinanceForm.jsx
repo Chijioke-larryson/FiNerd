@@ -1,6 +1,6 @@
 import React from 'react'
 
-export const Authentication = () => {
+export const FinanceForm = () => {
     return (
        <>
        </>
