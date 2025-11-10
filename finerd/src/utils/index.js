@@ -76,7 +76,65 @@ export function calculateCurrentSpendingLevel(historyData) {
     }
 
     return totalImpact.toFixed(2)
+
 }
+// ==============================
+// FiNerd App — index.js (Time & Date Section)
+// ==============================
+
+// Format timestamp to readable date and time (e.g., “Nov 9, 2025, 3:42 PM”)
+export function formatDateTime(timestamp) {
+    const date = new Date(Number(timestamp));
+
+    const options = {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+    };
+
+    return date.toLocaleString(undefined, options);
+}
+
+// Returns how long ago an expense happened (e.g., “3 hours ago”)
+export function timeSinceExpense(timestamp) {
+    const seconds = Math.floor((Date.now() - Number(timestamp)) / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    if (minutes > 0) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
+    return 'Just now';
+}
+
+// Returns the elapsed time in a compact financial style (e.g., “2D 3H 15M”)
+export function timeSinceTransaction(utcMilliseconds) {
+    const now = Date.now();
+    const diff = now - Number(utcMilliseconds);
+
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    const months = Math.floor(days / 30);
+
+    const parts = [];
+    if (months) parts.push(`${months}M`);
+    if (days % 30) parts.push(`${days % 30}D`);
+    if (hours % 24) parts.push(`${hours % 24}H`);
+    if (minutes % 60) parts.push(`${minutes % 60}M`);
+    if (seconds % 60 || !parts.length) parts.push(`${seconds % 60}S`);
+
+    return parts.join(' ');
+}
+
+
+
+
 
 // Helper: get spending “impact” by category
 export function getSpendingImpact(category) {
@@ -104,25 +162,25 @@ export function getTopThreeCategories(historyData) {
 }
 
 // Time since last transaction (for dashboard display)
-export function timeSinceTransaction(utcMilliseconds) {
-    const now = Date.now()
-    const diff = now - utcMilliseconds
-
-    const seconds = Math.floor(diff / 1000)
-    const minutes = Math.floor(seconds / 60)
-    const hours = Math.floor(minutes / 60)
-    const days = Math.floor(hours / 24)
-    const months = Math.floor(days / 30)
-
-    let result = ''
-    if (months > 0) result += `${months}M `
-    if (days % 30 > 0) result += `${days % 30}D `
-    if (hours % 24 > 0) result += `${hours % 24}H `
-    if (minutes % 60 > 0) result += `${minutes % 60}M `
-    if (seconds % 60 > 0 || result === '') result += `${seconds % 60}S`
-
-    return result.trim()
-}
+// export function timeSinceTransaction(utcMilliseconds) {
+//     const now = Date.now()
+//     const diff = now - utcMilliseconds
+//
+//     const seconds = Math.floor(diff / 1000)
+//     const minutes = Math.floor(seconds / 60)
+//     const hours = Math.floor(minutes / 60)
+//     const days = Math.floor(hours / 24)
+//     const months = Math.floor(days / 30)
+//
+//     let result = ''
+//     if (months > 0) result += `${months}M `
+//     if (days % 30 > 0) result += `${days % 30}D `
+//     if (hours % 24 > 0) result += `${hours % 24}H `
+//     if (minutes % 60 > 0) result += `${minutes % 60}M `
+//     if (seconds % 60 > 0 || result === '') result += `${seconds % 60}S`
+//
+//     return result.trim()
+// }
 
 // Calculate daily finance stats
 export function calculateFinanceStats(transactionHistory) {
