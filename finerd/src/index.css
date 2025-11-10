@@ -145,13 +145,13 @@ h2 {
   font-size: 1.2rem;
 }
 
-.coffee-grid {
+.finerd-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
 
-.coffee-grid button {
+.finerd-grid button {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -159,7 +159,7 @@ h2 {
   width: 100%;
 }
 
-.coffee-button-selected {
+.finerd-button-selected {
   border-color: var(--border-highlight) !important;
 }
 
@@ -208,22 +208,22 @@ h2 {
   border-radius: var(--border-radius-small);
 }
 
-.coffee-history {
+.finerd-history {
   display: flex;
   align-items: center;
   gap: 1rem;
   flex-wrap: wrap;
 }
 
-.coffee-history i {
+.finerd-history i {
   font-size: 1.5rem;
 }
 
-.coffee-card {
+.finerd-card {
   position: relative;
 }
 
-.coffee-card-stat {
+.finerd-card-stat {
   position: absolute;
   z-index: 4;
   display: none;
@@ -233,7 +233,7 @@ h2 {
   flex-direction: column;
 }
 
-.coffee-card-stat p {
+.finerd-card-stat p {
   font-size: 0.7rem;
   white-space: nowrap;
 }
@@ -270,11 +270,11 @@ footer {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .coffee-grid {
+  .finerd-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .caffeine-level-text {
+  .finerd-level-text {
     font-size: 3rem;
     line-height: 1;
   }
