@@ -143,10 +143,10 @@ export function getSpendingImpact(category) {
 }
 
 // Get top 3 spending categories by frequency
-export function getTopThreeCategories(historyData) {
+export function getTopThreeCategories(data) {
     const categoryCount = {}
 
-    for (const entry of Object.values(historyData)) {
+    for (const entry of Object.values(data)) {
         const catName = entry.category
         categoryCount[catName] = (categoryCount[catName] || 0) + 1
     }
@@ -207,4 +207,7 @@ export function calculateFinanceStats(transactionHistory) {
         total_spent: totalSpent.toFixed(2),
         average_transactions: (Object.values(transactionHistory).length / totalDays).toFixed(2)
     }
+}
+
+export class data {
 }

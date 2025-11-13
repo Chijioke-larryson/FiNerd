@@ -10,6 +10,12 @@ export const FinanceForm = () => {
     const  [showTransactionType, setShowTransactionType] = useState(false)
     const [transactionSelection, setTransactionSelection] = useState(null)
     const [transactionCost, setTransactionCost] = useState(0)
+    const [hour, setHour] = useState(0)
+    const [min, setMin] = useState(0)
+
+    function handleSubmitForm() {
+        console.log(transactionSelection, transactionCost, hour, min)
+    }
 
 
     return (
@@ -72,7 +78,10 @@ export const FinanceForm = () => {
             <div className="time-entry"></div>
             <div>
                 <h3>Hours</h3>
-                <select id="hours-select">
+                <select  onChange={(e) => {
+                    setHour(e.target.value)
+                }} id="hours-select">
+
                     {[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23].map((hour, hourIndex) => {
                         return (
                             <option key={hourIndex} value={hour}>{hour} </option>
@@ -86,7 +95,9 @@ export const FinanceForm = () => {
 
             <div>
                 <h3>Mins</h3>
-                <select id="mins-select">
+                <select  onChange={(e) => {
+                    setMin(e.target.value)
+                }} id="mins-select">
                     {[0,5,15,20,30,40,50].map((min, minIndex) => {
                         return (
                             <option key={minIndex} value={min}>{min} </option>
@@ -97,7 +108,9 @@ export const FinanceForm = () => {
 
                 </select>
             </div>
-            <button>Add the Entry</button>
+            <button onClick={handleSubmitForm}>
+               <p>Add the Entry</p>
+            </button>
 
 
 
