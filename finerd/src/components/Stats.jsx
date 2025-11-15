@@ -31,7 +31,8 @@ export const Stats = () => {
     return (
       <>
           <div className="section-header">
-              <i className="fa-solid fa-chart-simple"/>
+              <i className="fa-solid fa-chart-pie
+"/>
               <h2>Stats</h2>
 
 
@@ -39,19 +40,19 @@ export const Stats = () => {
           <div className="stats-grid">
               <StatCard lg title="Current Finance Level" >
                   <div className="status">
-                      <p><span className="stat-text">{financeLevel}</span>$</p>
+                      <p><span className="stat-text">{financeLevel}</span> ₦ </p>
                       <h5 style={{color: statusLevels[warningLevel].color, background:statusLevels[warningLevel].background}}>Low</h5>
                   </div>
                   <p>{statusLevels[warningLevel].description}</p>
               </StatCard>
               <StatCard title="Daily Transaction">
-                  <p><span className="stat-text">{stats.average_daily_spent}</span>$</p>
+                  <p> ₦ <span className="stat-text">{stats.average_daily_spent}</span>  </p>
               </StatCard>
               <StatCard title="Average Transaction">
                   <p><span className="stat-text">{stats.average_transactions}</span></p>
               </StatCard>
               <StatCard title="Total Transaction ($)" >
-                  <p>$ <span className="stat-text">{stats.total_spent}</span></p>
+                  <p> ₦ <span className="stat-text">{stats.total_spent}</span></p>
               </StatCard>
 
               <table className='stat-table'>

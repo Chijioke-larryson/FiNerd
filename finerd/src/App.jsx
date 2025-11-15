@@ -5,7 +5,7 @@ import {Stats} from "./components/Stats.jsx";
 import {History} from "./components/History.jsx";
 
 function App() {
- const isAuthenticated =  true
+ const isAuthenticated =  false
 
     const authenticatedContent = (
         <>
@@ -18,7 +18,7 @@ function App() {
     return (
        <Layout>
            <Hero />
-           <FinanceForm />
+           <FinanceForm  isAuthenticated = {isAuthenticated}/>
            {isAuthenticated && (authenticatedContent)}
 
 

@@ -1,11 +1,17 @@
 import React, {useState} from 'react'
 import {spendingCategories} from "../utils/index.js";
+import {Modal} from "./Modal.jsx";
+import {Authentication} from "./Authentication.jsx";
 
 
 
 
 
-export const FinanceForm = () => {
+export const FinanceForm = (props) => {
+
+    const { isAuthenticated } = props
+
+    const [ showModal, setShowModal] = useState(false)
 
     const  [showTransactionType, setShowTransactionType] = useState(false)
     const [transactionSelection, setTransactionSelection] = useState(null)
@@ -14,12 +20,24 @@ export const FinanceForm = () => {
     const [min, setMin] = useState(0)
 
     function handleSubmitForm() {
+
+        if (!isAuthenticated) {
+            setShowModal(true)
+            return
+        }
+
         console.log(transactionSelection, transactionCost, hour, min)
     }
 
 
     return (
         <>
+            { showModal && (<Modal handleCloseModal={() => {
+                setShowModal(false)
+            }}>
+                <Authentication/>
+            </Modal>
+            )}
             <div className="section-header">
                 <i className="fa-solid fa-pencil"/>
                 <h2>Start Tracking Today</h2>
@@ -34,7 +52,7 @@ export const FinanceForm = () => {
                             setShowTransactionType(false)
                         }} className={"button-card " + (option.category === transactionSelection ? 'finerd-button-selected' : ' ')} key={optionIndex}>
                             <h4>{option.category}</h4>
-                            <p>{option.impact}$</p>
+                            <p>₦{option.impact}</p>
                         </button>
                     )
                 })}
@@ -68,12 +86,12 @@ export const FinanceForm = () => {
             </select>
             )}
 
-            <h4>Add the Transaction($)</h4>
+            <h4>Add the Transaction(₦)</h4>
             <input className="w-full"  type="number" value={transactionCost}  onChange={(e) =>
 
             {
                 setTransactionCost(e.target.value)
-            }} placeholder="$100"/>
+            }} placeholder="₦100"/>
             <h4>Time of Transaction</h4>
             <div className="time-entry"></div>
             <div>

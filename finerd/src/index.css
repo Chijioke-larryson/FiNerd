@@ -281,3 +281,31 @@ footer {
 
 
 }
+
+.wallet-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.wallet-icon {
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Tooltip style */
+.wallet-icon:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  white-space: pre-line;
+  top: 130%;
+  left: 0;
+  padding: 8px 12px;
+  background: #111;
+  color: #fff;
+  font-size: 12px;
+  border-radius: 6px;
+  width: max-content;
+  max-width: 240px;
+  z-index: 20;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
