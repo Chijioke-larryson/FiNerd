@@ -1,11 +1,14 @@
 import React, {useState} from 'react'
 import {Modal} from "./Modal.jsx";
 import {Authentication} from "./Authentication.jsx";
+import {getAuth} from "firebase/auth";
+import {useAuth} from "../context/AuthContext.jsx";
 
 export const Layout = (props) => {
     const {children} = props
 
     const [showModal, setShowModal] = useState(false)
+    const { globalUser, logout } = useAuth()
 
     const header = (
         <header>
@@ -13,14 +16,21 @@ export const Layout = (props) => {
                 <h1 className="text-gradient">FINERD</h1>
                 <p>For Finance Culture</p>
             </div>
-            <button onClick={() => {
+            {globalUser ? (
+                <button onClick={logout}>
+                    <p>Logout</p>
+                    <i className="fa-solid fa-coins"></i>
+                    <i className="fa-solid fa-money-bill-1"></i>
+                </button>)
+
+                :(<button onClick={() => {
                 setShowModal(true)
             }}>
                 <p>Sign up for free</p>
                 <i className="fa-solid fa-coins"></i>
                 <i className="fa-solid fa-money-bill-1"></i>
             </button>
-
+            )}
         </header>
 
     )
@@ -33,12 +43,19 @@ export const Layout = (props) => {
         </footer>
     )
 
+
+    function handleCloseModal() {
+        setShowModal(false)
+    }
+
     return (
       <>
           { showModal && (<Modal handleCloseModal={() => {
               setShowModal(false)
           }}>
-              <Authentication/>
+              <Authentication handlCloseModal={() =>{
+                  setShowModal(false)
+              }}/>
           </Modal>)}
           {header}
           <main>

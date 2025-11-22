@@ -29,13 +29,15 @@ export const FinanceForm = (props) => {
         console.log(transactionSelection, transactionCost, hour, min)
     }
 
+    function handleCloseModal() {
+        setShowModal(false)
+    }
+
 
     return (
         <>
-            { showModal && (<Modal handleCloseModal={() => {
-                setShowModal(false)
-            }}>
-                <Authentication/>
+            { showModal && (<Modal handleCloseModal={handleCloseModal}>
+                <Authentication handleCloseModal={handleCloseModal}/>
             </Modal>
             )}
             <div className="section-header">
@@ -48,8 +50,9 @@ export const FinanceForm = (props) => {
                 {spendingCategories.slice(0, 6).map((option, optionIndex) => {
                     return (
                         <button onClick={() => {
-                            setTransactionSelection(option.category)
-                            setShowTransactionType(false)
+                            setShowTransactionType(false);
+                            setTransactionSelection(option.category);
+
                         }} className={"button-card " + (option.category === transactionSelection ? 'finerd-button-selected' : ' ')} key={optionIndex}>
                             <h4>{option.category}</h4>
                             <p>₦{option.impact}</p>
@@ -71,14 +74,14 @@ export const FinanceForm = (props) => {
                     setTransactionSelection(e.target.value)
 
                 }} id="finerd-list" name="finerd-list">
-                <option value={null}>
+                <option value="">
                     Select transaction type
 
                 </option>
                 {spendingCategories.map((option, optionIndex) => {
                     return (
                         <option value={option.category} key={optionIndex}>
-                            {option.category} ({option.impact}$)
+                            {option.category} (₦{option.impact})
                         </option>
                     )
                 })}
@@ -90,21 +93,21 @@ export const FinanceForm = (props) => {
             <input className="w-full"  type="number" value={transactionCost}  onChange={(e) =>
 
             {
-                setTransactionCost(e.target.value)
+                setTransactionCost((e.target.value))
             }} placeholder="₦100"/>
             <h4>Time of Transaction</h4>
             <div className="time-entry"></div>
             <div>
                 <h3>Hours</h3>
                 <select  onChange={(e) => {
-                    setHour(e.target.value)
+                    setHour(number(e.target.value))
                 }} id="hours-select">
 
-                    {[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23].map((hour, hourIndex) => {
-                        return (
-                            <option key={hourIndex} value={hour}>{hour} </option>
-                        )
-                    })}
+                    {Array.from({ length: 24 }, (_, i) => i).map((hr) => (
+                        <option key={hr} value={hr}>
+                            {hr}
+                        </option>
+                    ))}
 
 
 
@@ -114,7 +117,7 @@ export const FinanceForm = (props) => {
             <div>
                 <h3>Mins</h3>
                 <select  onChange={(e) => {
-                    setMin(e.target.value)
+                    setMin(number(e.target.value))
                 }} id="mins-select">
                     {[0,5,15,20,30,40,50].map((min, minIndex) => {
                         return (
