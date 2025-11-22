@@ -8,12 +8,28 @@ import {
 } from "firebase/auth";
 import { auth, db } from "../../firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext(null);
 
 export function useAuth() {
     return useContext(AuthContext);
 }
+export const Authentication = (props) => {
+    const { globalUser, isLoading } = useAuth();
+    const navigate = useNavigate();
+    const { handleCloseModal } = props;
+
+    useEffect(() => {
+        if (!isLoading && globalUser) {
+            // Redirect immediately if user is logged in
+            navigate("/dashboard"); // or any page you want
+            handleCloseModal?.(); // close the modal if it's open
+        }
+    }, [globalUser, isLoading, isLoading, useNavigate]);
+
+    // rest of your Authentication code
+};
 
 export function AuthProvider({ children }) {
     const [globalUser, setGlobalUser] = useState(null);

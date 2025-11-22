@@ -53,7 +53,7 @@ export const Layout = (props) => {
           { showModal && (<Modal handleCloseModal={() => {
               setShowModal(false)
           }}>
-              <Authentication handlCloseModal={() =>{
+              <Authentication handleCloseModal={() =>{
                   setShowModal(false)
               }}/>
           </Modal>)}

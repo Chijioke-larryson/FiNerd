@@ -2,6 +2,9 @@ import React, {useState} from 'react'
 import {spendingCategories} from "../utils/index.js";
 import {Modal} from "./Modal.jsx";
 import {Authentication} from "./Authentication.jsx";
+import {useAuth} from "../context/AuthContext.jsx";
+import {db} from "../../firebase.js";
+import {doc} from "firebase/firestore"
 
 
 
@@ -19,6 +22,8 @@ export const FinanceForm = (props) => {
     const [hour, setHour] = useState(0)
     const [min, setMin] = useState(0)
 
+    const { globalData, setGlobalData, globalUser } = useAuth()
+
     function handleSubmitForm() {
 
         if (!isAuthenticated) {
@@ -31,7 +36,30 @@ export const FinanceForm = (props) => {
 
     function handleCloseModal() {
         setShowModal(false)
+
     }
+      if(!transactionSelection){
+          return
+      }
+
+      const newGlobalData = {
+          ...(globalData || {})
+      }
+
+      const nowTime =  Date.now()
+     const timeToSub = (hour * 60 * 60 *1000 + min * 60 * 1000)
+     const timestamp = nowTime - timeToSub
+     newGlobalData[timestamp] = {
+          category: transactionSelection,
+          amount: transactionCost
+
+     }
+      console.log(timestamp,transactionSelection, transactionCost)
+
+      setGlobalData(newGlobalData)
+
+    const useRef = doc(db,'users', globalUser)
+
 
 
     return (

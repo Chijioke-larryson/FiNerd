@@ -3,9 +3,15 @@ import {Hero} from "./components/Hero.jsx";
 import {FinanceForm} from "./components/FinanceForm.jsx";
 import {Stats} from "./components/Stats.jsx";
 import {History} from "./components/History.jsx";
+import {useAuth} from "./context/AuthContext.jsx";
+import {calculateCurrentSpendingLevel, calculateFinanceStats, transactionHistory} from "./utils/index.js";
 
 function App() {
- const isAuthenticated =  false
+    const { globalUser, isLoading } = useAuth()
+    let globalData = calculateFinanceStats(transactionHistory)
+
+    const isAuthenticated =  globalUser
+    const isData = globalData && !!Object.keys(globalData || {}).length
 
     const authenticatedContent = (
         <>
@@ -19,7 +25,10 @@ function App() {
        <Layout>
            <Hero />
            <FinanceForm  isAuthenticated = {isAuthenticated}/>
-           {isAuthenticated && (authenticatedContent)}
+           {(isAuthenticated && isLoading) && (
+               <p>Loading Data....</p>
+           )}
+           {(isAuthenticated && isData) && (authenticatedContent)}
 
 
        </Layout>

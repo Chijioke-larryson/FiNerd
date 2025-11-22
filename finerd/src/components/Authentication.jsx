@@ -10,6 +10,7 @@ export const Authentication = ({ handleCloseModal }) => {
 
     const { signup, login } = useAuth();
 
+
     // ----------------------------
     // HANDLE MAIN AUTH BUTTON
     // ----------------------------
@@ -31,9 +32,9 @@ export const Authentication = ({ handleCloseModal }) => {
             } else {
                 // LOGIN
                 await login(email, password);
-            }
+            }handleCloseModal()
 
-            handleCloseModal();
+
         } catch (error) {
             console.log(error.code);
 
@@ -65,8 +66,8 @@ export const Authentication = ({ handleCloseModal }) => {
                     setError("Too many attempts. Try again later.");
                     break;
 
-                default:
-                    setError("An unknown error occurred.");
+                // default:
+                //     setError("An unknown error occurred.");
             }
         } finally {
             setIsAuthenticating(false);
