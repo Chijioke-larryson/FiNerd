@@ -65,7 +65,7 @@ export function AuthProvider(props) {
                 setIsLoading(false)
             }
         })
-        return unsubscribe
+        return() => unsubscribe ()
     }, [])
 
     return (
