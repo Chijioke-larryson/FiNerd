@@ -4,7 +4,7 @@ import {Modal} from "./Modal.jsx";
 import {Authentication} from "./Authentication.jsx";
 import {useAuth} from "../context/AuthContext.jsx";
 import {db} from "../../firebase.js";
-import {doc} from "firebase/firestore"
+import {doc, setDoc} from "firebase/firestore"
 
 
 
@@ -23,42 +23,60 @@ export const FinanceForm = (props) => {
     const [min, setMin] = useState(0)
 
     const { globalData, setGlobalData, globalUser } = useAuth()
-
-    function handleSubmitForm() {
-
+    async function handleSubmitForm() {
         if (!isAuthenticated) {
             setShowModal(true)
             return
         }
 
-        console.log(transactionSelection, transactionCost, hour, min)
+        // define a guard clause that only submits the form if it is completed
+        if (!transactionSelection) {
+            return
+        }
+
+        try {
+            // then we're going to create a new data object
+            const newGlobalData = {
+                ...(globalData || {})
+            }
+
+            const nowTime = Date.now()
+            const timeToSubtract = (hour * 60 * 60 * 1000) + (min * 60 * 1000)
+            const timestamp = nowTime - timeToSubtract
+
+            const newData = {
+                name: transactionSelection,
+                cost: transactionCost
+            }
+            newGlobalData[timestamp] = newData
+            console.log(timestamp, transactionSelection, transactionCost)
+
+            // update the global state
+            setGlobalData(newGlobalData)
+
+            // persist the data in the firebase firestore
+            const userRef = doc(db, 'users', globalUser.uid)
+            const res = await setDoc(userRef, {
+                [timestamp]: newData
+            }, { merge: true })
+
+            setTransactionSelection(null)
+            setHour(0)
+            setMin(0)
+            setTransactionCost(0)
+        } catch (err) {
+            console.log(err.message)
+        }
     }
+
+
+
 
     function handleCloseModal() {
         setShowModal(false)
 
     }
-      if(!transactionSelection){
-          return
-      }
 
-      const newGlobalData = {
-          ...(globalData || {})
-      }
-
-      const nowTime =  Date.now()
-     const timeToSub = (hour * 60 * 60 *1000 + min * 60 * 1000)
-     const timestamp = nowTime - timeToSub
-     newGlobalData[timestamp] = {
-          category: transactionSelection,
-          amount: transactionCost
-
-     }
-      console.log(timestamp,transactionSelection, transactionCost)
-
-      setGlobalData(newGlobalData)
-
-    const useRef = doc(db,'users', globalUser)
 
 
 
