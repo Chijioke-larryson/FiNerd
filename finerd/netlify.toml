@@ -1,0 +1,3 @@
+[build]
+  command = "cd finerd && npm run build"
+  publish = "finerd/dist"
