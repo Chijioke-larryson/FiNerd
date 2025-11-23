@@ -1,118 +1,77 @@
-import { useEffect, useState, useContext, createContext } from "react";
-import {
-    onAuthStateChanged,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    signOut,
-    sendPasswordResetEmail
-} from "firebase/auth";
-import { auth, db } from "../../firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { createUserWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail, signInWithEmailAndPassword, signOut } from 'firebase/auth'
+import { useState, useEffect, useContext, createContext } from 'react'
+import { auth, db } from '../../firebase'
+import { doc, getDoc } from 'firebase/firestore'
 
-
-const AuthContext = createContext(null);
+const AuthContext = createContext()
 
 export function useAuth() {
-    return useContext(AuthContext);
+    return useContext(AuthContext)
 }
-export const Authentication = (props) => {
-    const { globalUser, isLoading } = useAuth();
 
-    const { handleCloseModal } = props;
+export function AuthProvider(props) {
+    const { children } = props
+    const [globalUser, setGlobalUser] = useState(null)
+    const [globalData, setGlobalData] = useState(null)
+    const [isLoading, setIsLoading] = useState(false)
 
-//     useEffect(() => {
-//         if (!isLoading && globalUser) {
-//             // Redirect immediately if user is logged in
-//             navigate("/dashboard"); // or any page you want
-//             handleCloseModal?.(); // close the modal if it's open
-//         }
-//     }, [globalUser, isLoading, isLoading, useNavigate]);
-//
-//     // rest of your Authentication code
-// };
-
-export function AuthProvider({ children }) {
-    const [globalUser, setGlobalUser] = useState(null);
-    const [globalData, setGlobalData] = useState({});
-    const [isLoading, setIsLoading] = useState(false);
-
-    async function signup(email, password) {
-
-        try{
-            return await  createUserWithEmailAndPassword(auth, email, password);
-        }catch (e) {
-            console.error("Signup Error:", e.message);
-            throw e;
-
-        }
-
+    function signup(email, password) {
+        return createUserWithEmailAndPassword(auth, email, password)
     }
 
     function login(email, password) {
-        return signInWithEmailAndPassword(auth, email, password);
+        return signInWithEmailAndPassword(auth, email, password)
     }
 
     function resetPassword(email) {
-        return sendPasswordResetEmail(auth, email);
+        return sendPasswordResetEmail(auth, email)
     }
 
     function logout() {
-        setGlobalUser(null);
-        setGlobalData(null);
-        return signOut(auth);
+        setGlobalUser(null)
+        setGlobalData(null)
+        return signOut(auth)
     }
+
+    const value = { globalUser, globalData, setGlobalData, isLoading, signup, login, logout }
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            setGlobalUser(user);
-
             console.log('CURRENT USER: ', user)
-
+            setGlobalUser(user)
+            // if there's no user, empty the user state and return from this listener
             if (!user) {
                 console.log('No active user')
-                setGlobalData(null);
-                return;
+                return
             }
+
+            // if there is a user, then check if the user has data in the database, and if they do, then fetch said data and update the global state
 
             try {
-                setIsLoading(true);
+                setIsLoading(true)
+                // first we create a reference for the document (labelled json object), and then we get the doc, and then we snapshot it to see if there's anything there
+                const docRef = doc(db, 'users', user.uid)
+                const docSnap = await getDoc(docRef)
 
-                const docRef = doc(db, "users", user.uid);
-                const docSnap = await getDoc(docRef);
-
-                let firebaseData = {};
+                let firebaseData = {}
                 if (docSnap.exists()) {
-                    console.log("Found User Data");
-                    firebaseData = docSnap.data();
+                    firebaseData = docSnap.data()
+                    console.log('Found user data', firebaseData)
                 }
-
-                setGlobalData(firebaseData);
-            } catch (e) {
-                console.log(e.message);
+                setGlobalData(firebaseData)
+            } catch (err) {
+                console.log(err.message)
             } finally {
-                setIsLoading(false);
+                setIsLoading(false)
             }
-        });
-
-        return () => {
-            unsubscribe()
-        };
-    }, []);
-
-    const value = {
-        globalUser,
-        globalData,
-        setGlobalData,
-        isLoading,
-        signup,
-        login,
-        resetPassword,
-        logout
-    };
+        })
+        return unsubscribe
+    }, [])
 
     return (
         <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
-    );
+    )
 }
+
