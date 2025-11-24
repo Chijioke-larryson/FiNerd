@@ -1,4 +1,0 @@
-[build]
-  base = "finerd"
-  command = "npm run build"
-  publish = "finerd/dist"

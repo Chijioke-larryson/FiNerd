@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { useAuth } from "../context/AuthContext.jsx";
+import {useAuth} from "../context/AuthContext.jsx";
+
 
 export const Authentication = ({ handleCloseModal }) => {
     const [isRegistration, setIsRegistration] = useState(false);
