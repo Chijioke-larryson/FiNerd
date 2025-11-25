@@ -1,196 +1,146 @@
-import React, {useState} from 'react'
-import {spendingCategories} from "../utils/index.js";
-import {Modal} from "./Modal.jsx";
-import {Authentication} from "./Authentication.jsx";
-import {useAuth} from "../context/AuthContext.jsx";
-import {db} from "../../firebase.js";
-import {doc, setDoc} from "firebase/firestore"
-
-
-
-
+import React, { useState } from 'react';
+import { spendingCategories } from "../utils/index.js";
+import { Modal } from "./Modal.jsx";
+import { Authentication } from "./Authentication.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
+import { db } from "../../firebase.js";
+import { doc, setDoc } from "firebase/firestore";
 
 export const FinanceForm = (props) => {
+    const { isAuthenticated } = props;
+    const [showModal, setShowModal] = useState(false);
+    const [otherMode, setOtherMode] = useState(false);
+    const [transactionCategory, setTransactionCategory] = useState('');
+    const [transactionAmount, setTransactionAmount] = useState(1); // starts at 1
+    const [hour, setHour] = useState(0);
+    const [min, setMin] = useState(0);
 
-    const { isAuthenticated } = props
+    const { globalData, setGlobalData, globalUser } = useAuth();
 
-    const [ showModal, setShowModal] = useState(false)
-
-    const  [showTransactionType, setShowTransactionType] = useState(false)
-    const [transactionSelection, setTransactionSelection] = useState(null)
-    const [transactionCost, setTransactionCost] = useState(0)
-    const [hour, setHour] = useState(0)
-    const [min, setMin] = useState(0)
-
-    const { globalData, setGlobalData, globalUser } = useAuth()
-    async function handleSubmitForm() {
+    const handleSubmitForm = async () => {
         if (!isAuthenticated) {
-            setShowModal(true)
-            return
+            setShowModal(true);
+            return;
         }
 
-        // define a guard clause that only submits the form if it is completed
-        if (!transactionSelection) {
-            return
-        }
+        if (!transactionCategory || transactionAmount < 1) return;
 
         try {
-            // then we're going to create a new data object
-            const newGlobalData = {
-                ...(globalData || {})
-            }
+            const nowTime = Date.now();
+            const timeToSubtract = (hour * 60 * 60 * 1000) + (min * 60 * 1000);
+            const timestamp = nowTime - timeToSubtract;
 
-            const nowTime = Date.now()
-            const timeToSubtract = (hour * 60 * 60 * 1000) + (min * 60 * 1000)
-            const timestamp = nowTime - timeToSubtract
+            const entry = {
+                category: transactionCategory,
+                amount: Number(transactionAmount)
+            };
 
-            const newData = {
-                name: transactionSelection,
-                cost: transactionCost
-            }
-            newGlobalData[timestamp] = newData
-            console.log(timestamp, transactionSelection, transactionCost)
+            const newGlobalData = { ...(globalData || {}), [timestamp]: entry };
+            setGlobalData(newGlobalData);
 
-            // update the global state
-            setGlobalData(newGlobalData)
+            const userRef = doc(db, 'users', globalUser.uid);
+            await setDoc(userRef, { [timestamp]: entry }, { merge: true });
 
-            // persist the data in the firebase firestore
-            const userRef = doc(db, 'users', globalUser.uid)
-            const res = await setDoc(userRef, {
-                [timestamp]: newData
-            }, { merge: true })
-
-            setTransactionSelection(null)
-            setHour(0)
-            setMin(0)
-            setTransactionCost(0)
+            // Reset form
+            setTransactionCategory('');
+            setTransactionAmount(1);
+            setHour(0);
+            setMin(0);
+            setOtherMode(false);
         } catch (err) {
-            console.log(err.message)
+            console.error(err.message);
         }
-    }
-
-
-
-
-    function handleCloseModal() {
-        setShowModal(false)
-
-    }
-
-
-
+    };
 
     return (
         <>
-            { showModal && (<Modal handleCloseModal={handleCloseModal}>
-                <Authentication handleCloseModal={handleCloseModal}/>
-            </Modal>
+            {showModal && (
+                <Modal handleCloseModal={() => setShowModal(false)}>
+                    <Authentication handleCloseModal={() => setShowModal(false)} />
+                </Modal>
             )}
+
             <div className="section-header">
-                <i className="fa-solid fa-pencil"/>
+                <i className="fa-solid fa-pencil" />
                 <h2>Start Tracking Today</h2>
-
             </div>
-            <h4>Select expense type</h4>
+
+            <h4>Select Expense Type</h4>
             <div className="finerd-grid">
-                {spendingCategories.slice(0, 6).map((option, optionIndex) => {
-                    return (
-                        <button onClick={() => {
-                            setShowTransactionType(false);
-                            setTransactionSelection(option.category);
-
-                        }} className={"button-card " + (option.category === transactionSelection ? 'finerd-button-selected' : ' ')} key={optionIndex}>
-                            <h4>{option.category}</h4>
-                            <p>₦{option.impact}</p>
-                        </button>
-                    )
-                })}
-                <button  onClick={() =>{
-                    setShowTransactionType(true)
-                    setTransactionSelection(null)
-                }} className={"button-card " + (showTransactionType ? 'finerd-button-selected' : ' ')}>
-                    <h4>other</h4>
+                {spendingCategories.map((option, index) => (
+                    <button
+                        key={index}
+                        className={`button-card ${transactionCategory === option.category ? 'finerd-button-selected' : ''}`}
+                        onClick={() => {
+                            setOtherMode(false);
+                            setTransactionCategory(option.category);
+                        }}
+                    >
+                        <h4>{option.category}</h4>
+                        <p>₦{option.impact}</p>
+                    </button>
+                ))}
+                <button
+                    className={`button-card ${otherMode ? 'finerd-button-selected' : ''}`}
+                    onClick={() => {
+                        setOtherMode(true);
+                        setTransactionCategory('');
+                    }}
+                >
+                    <h4>Other</h4>
                     <p>n/a</p>
-
                 </button>
-
             </div>
-            {showTransactionType &&(
-                <select onChange={(e) => {
-                    setTransactionSelection(e.target.value)
 
-                }} id="finerd-list" name="finerd-list">
-                <option value="">
-                    Select transaction type
-
-                </option>
-                {spendingCategories.map((option, optionIndex) => {
-                    return (
-                        <option value={option.category} key={optionIndex}>
-                            {option.category} (₦{option.impact})
-                        </option>
-                    )
-                })}
-
-            </select>
+            {otherMode && (
+                <select
+                    value={transactionCategory}
+                    onChange={(e) => setTransactionCategory(e.target.value)}
+                    className="w-full mt-2"
+                >
+                    <option value="">Select unique expense</option>
+                    {/* Here you can put a list of predefined “other” expense types */}
+                    <option value="Gifts">Gifts</option>
+                    <option value="Charity">Charity</option>
+                    <option value="Medical">Medical</option>
+                    <option value="Travel">Travel</option>
+                    <option value="Miscellaneous">Miscellaneous</option>
+                </select>
             )}
 
-            <h4>Add the Transaction(₦)</h4>
-            <input className="w-full"  type="number" value={transactionCost}  onChange={(e) =>
+            <h4>Add Transaction Amount (₦)</h4>
+            <input
+                type="number"
+                value={transactionAmount}
+                min={1} // cannot go below 1
+                onChange={(e) => setTransactionAmount(Number(e.target.value))}
+                placeholder="₦1"
+                className="w-full"
+            />
 
-            {
-                setTransactionCost((e.target.value))
-            }} placeholder="₦100"/>
             <h4>Time of Transaction</h4>
-            <div className="time-entry"></div>
-            <div>
-                <h3>Hours</h3>
-                <select  onChange={(e) => {
-                    setHour(number(e.target.value))
-                }} id="hours-select">
-
-                    {Array.from({ length: 24 }, (_, i) => i).map((hr) => (
-                        <option key={hr} value={hr}>
-                            {hr}
-                        </option>
-                    ))}
-
-
-
-                </select>
+            <div className="time-entry">
+                <div>
+                    <h3>Hours</h3>
+                    <select value={hour} onChange={(e) => setHour(Number(e.target.value))}>
+                        {Array.from({ length: 24 }, (_, i) => i).map((hr) => (
+                            <option key={hr} value={hr}>{hr}</option>
+                        ))}
+                    </select>
+                </div>
+                <div>
+                    <h3>Minutes</h3>
+                    <select value={min} onChange={(e) => setMin(Number(e.target.value))}>
+                        {[0, 5, 10, 15, 20, 30, 40, 50].map((m) => (
+                            <option key={m} value={m}>{m}</option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
-            <div>
-                <h3>Mins</h3>
-                <select  onChange={(e) => {
-                    setMin(number(e.target.value))
-                }} id="mins-select">
-                    {[0,5,15,20,30,40,50].map((min, minIndex) => {
-                        return (
-                            <option key={minIndex} value={min}>{min} </option>
-                        )
-                    })}
-
-
-
-                </select>
-            </div>
-            <button onClick={handleSubmitForm}>
-               <p>Add the Entry</p>
+            <button onClick={handleSubmitForm} className="mt-4">
+                <p>Add Entry</p>
             </button>
-
-
-
-
-
-
-
-
-
-
-
-
         </>
-    )
-}
-
+    );
+};

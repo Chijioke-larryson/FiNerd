@@ -1,7 +1,7 @@
 import React, {useState} from 'react'
 import {Modal} from "./Modal.jsx";
 import {Authentication} from "./Authentication.jsx";
-import {getAuth} from "firebase/auth";
+// import {getAuth} from "firebase/auth";
 import {useAuth} from "../context/AuthContext.jsx";
 
 export const Layout = (props) => {

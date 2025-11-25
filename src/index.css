@@ -320,20 +320,51 @@ footer {
 }
 
 
-/* Tooltip style */
-.wallet-icon:hover::after {
-  content: attr(data-tooltip);
+.wallet-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  margin: 10px;
+  background: linear-gradient(145deg, #f5f7fa, #e4ebf2); /* soft gradient */
+  border-radius: 1rem; /* rounded corners */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* subtle shadow */
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  font-size: 1.5rem;
+  color: #1f2937; /* wallet icon color */
+}
+
+.wallet-wrapper:hover {
+  transform: translateY(-4px) scale(1.05); /* subtle lift effect */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(145deg, #e0e7ff, #c7d2fe); /* hover gradient */
+}
+
+/* Optional: show a custom tooltip on hover */
+.wallet-wrapper::after {
+  content: attr(title); /* takes the title attribute */
   position: absolute;
-  white-space: pre-line;
-  top: 130%;
-  left: 0;
-  padding: 8px 12px;
-  background: #111;
+  bottom: 110%; /* above the card */
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
   color: #fff;
-  font-size: 12px;
-  border-radius: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  white-space: pre-line; /* preserves line breaks in summary */
+  font-size: 0.75rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
   width: max-content;
-  max-width: 240px;
-  z-index: 20;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  max-width: 220px;
+  text-align: left;
+  z-index: 10;
+}
+
+.wallet-wrapper:hover::after {
+  opacity: 1;
 }

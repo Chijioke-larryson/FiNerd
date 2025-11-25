@@ -1,5 +1,5 @@
 // ==============================
-// FiNerd App — index.js
+// FiNerd App — index.js (FULL FIXED VERSION)
 // ==============================
 
 // Spending intensity levels
@@ -27,7 +27,11 @@ export const statusLevels = {
     }
 }
 
-// Example transaction history (timestamp: { category, amount })
+
+// ==============================
+// Example Local Transaction History
+// (Only used if Firebase is not loaded)
+// ==============================
 export const transactionHistory = {
     "1727579064032": { category: "Groceries", amount: 54.20 },
     "1727629263026": { category: "Transportation", amount: 18.50 },
@@ -41,7 +45,10 @@ export const transactionHistory = {
     "1727647449961": { category: "Clothing", amount: 40.00 }
 }
 
-// Spending categories and their weights (used for “financial caffeine” equivalent)
+
+// ==============================
+// Spending Categories List
+// ==============================
 export const spendingCategories = [
     { category: "Groceries", impact: 20 },
     { category: "Transportation", impact: 10 },
@@ -52,55 +59,68 @@ export const spendingCategories = [
     { category: "Utilities", impact: 15 },
     { category: "Subscriptions", impact: 10 },
     { category: "Clothing", impact: 20 },
-    { category: "Coffee & Snacks", impact: 5 },
+    { category: "Coffee & Snacks", impact: 5 }
 ]
 
-// Half-life logic re-imagined as “spending effect half-life”
-// (e.g., how long recent spending affects your financial state)
-const halfLifeHours = 72 // 3 days effect window
+
+// ==============================
+// Spending Half-Life Calculation
+// ==============================
+const halfLifeHours = 72; // 3 days
 
 export function calculateCurrentSpendingLevel(historyData) {
-    const currentTime = Date.now()
-    const halfLife = halfLifeHours * 60 * 60 * 1000 // convert to ms
-    const maxAge = 30 * 24 * 60 * 60 * 1000 // 30 days window
+    if (!historyData) return 0; // guard against undefined/null
 
-    let totalImpact = 0
+    const currentTime = Date.now();
+    const halfLife = halfLifeHours * 60 * 60 * 1000;
+    const maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+    let totalImpact = 0;
 
     for (const [timestamp, entry] of Object.entries(historyData)) {
-        const timeElapsed = currentTime - parseInt(timestamp)
-        if (timeElapsed <= maxAge) {
-            const spendingImpact = getSpendingImpact(entry.category)
-            const remainingImpact = spendingImpact * Math.pow(0.5, timeElapsed / halfLife)
-            totalImpact += remainingImpact
-        }
+        const ts = Number(timestamp);
+        if (isNaN(ts)) continue;
+
+        const timeElapsed = currentTime - ts;
+        if (timeElapsed > maxAge) continue;
+
+        const spendingImpact = getSpendingImpact(entry.category);
+        const remainingImpact = spendingImpact * Math.pow(0.5, timeElapsed / halfLife);
+        totalImpact += remainingImpact;
     }
 
-    return totalImpact.toFixed(2)
-
+    return totalImpact.toFixed(2);
 }
+
+
+
+
 // ==============================
-// FiNerd App — index.js (Time & Date Section)
+// Time & Date Formatting
 // ==============================
 
-// Format timestamp to readable date and time (e.g., “Nov 9, 2025, 3:42 PM”)
+// Example: "Nov 10, 2025, 4:35 PM"
 export function formatDateTime(timestamp) {
     const date = new Date(Number(timestamp));
+    if (isNaN(date.getTime())) return "Invalid Date";
 
-    const options = {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-    };
-
-    return date.toLocaleString(undefined, options);
+    return date.toLocaleString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+    });
 }
 
-// Returns how long ago an expense happened (e.g., “3 hours ago”)
+
+// Example: "3 hours ago"
 export function timeSinceExpense(timestamp) {
-    const seconds = Math.floor((Date.now() - Number(timestamp)) / 1000);
+    const ts = Number(timestamp);
+    if (isNaN(ts)) return "";
+
+    const seconds = Math.floor((Date.now() - ts) / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
@@ -108,14 +128,16 @@ export function timeSinceExpense(timestamp) {
     if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
     if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
     if (minutes > 0) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
-    return 'Just now';
+    return "Just now";
 }
 
-// Returns the elapsed time in a compact financial style (e.g., “2D 3H 15M”)
-export function timeSinceTransaction(utcMilliseconds) {
-    const now = Date.now();
-    const diff = now - Number(utcMilliseconds);
 
+// Example: "2D 5H 30M"
+export function timeSinceTransaction(utcMs) {
+    const ts = Number(utcMs);
+    if (isNaN(ts)) return "";
+
+    const diff = Date.now() - ts;
     const seconds = Math.floor(diff / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
@@ -127,87 +149,92 @@ export function timeSinceTransaction(utcMilliseconds) {
     if (days % 30) parts.push(`${days % 30}D`);
     if (hours % 24) parts.push(`${hours % 24}H`);
     if (minutes % 60) parts.push(`${minutes % 60}M`);
-    if (seconds % 60 || !parts.length) parts.push(`${seconds % 60}S`);
+    if (seconds % 60 || parts.length === 0) parts.push(`${seconds % 60}S`);
 
-    return parts.join(' ');
+    return parts.join(" ");
 }
 
 
-
-
-
-// Helper: get spending “impact” by category
+// ==============================
+// Spending Impact Helper
+// ==============================
 export function getSpendingImpact(category) {
-    const cat = spendingCategories.find(c => c.category === category)
-    return cat ? cat.impact : 0
+    const cat = spendingCategories.find(c => c.category === category);
+    if (!cat) return 0;
+
+    // Treat Investments and Savings as positive
+    if (category === "Investments" || category === "Savings") {
+        return Math.abs(cat.impact);
+    }
+    return cat.impact;
 }
 
-// Get top 3 spending categories by frequency
+
+// ==============================
+// Top 3 Categories
+// ==============================
 export function getTopThreeCategories(data) {
-    const categoryCount = {}
+    const categoryCount = {};
 
     for (const entry of Object.values(data)) {
-        const catName = entry.category
-        categoryCount[catName] = (categoryCount[catName] || 0) + 1
+        const catName = entry.category || entry.name;
+        if (!catName) continue;
+
+        categoryCount[catName] = (categoryCount[catName] || 0) + 1;
     }
 
-    const sorted = Object.entries(categoryCount).sort((a, b) => b[1] - a[1])
-    const total = Object.values(categoryCount).reduce((sum, count) => sum + count, 0)
+    const total = Object.values(categoryCount).reduce((sum, count) => sum + count, 0) || 1;
 
-    return sorted.slice(0, 3).map(([name, count]) => ({
+    const sorted = Object.entries(categoryCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3);
+
+    return sorted.map(([name, count]) => ({
         category: name,
         count,
-        percentage: ((count / total) * 100).toFixed(2) + '%'
-    }))
+        percentage: ((count / total) * 100).toFixed(2) + "%"
+    }));
 }
 
-// Time since last transaction (for dashboard display)
-// export function timeSinceTransaction(utcMilliseconds) {
-//     const now = Date.now()
-//     const diff = now - utcMilliseconds
-//
-//     const seconds = Math.floor(diff / 1000)
-//     const minutes = Math.floor(seconds / 60)
-//     const hours = Math.floor(minutes / 60)
-//     const days = Math.floor(hours / 24)
-//     const months = Math.floor(days / 30)
-//
-//     let result = ''
-//     if (months > 0) result += `${months}M `
-//     if (days % 30 > 0) result += `${days % 30}D `
-//     if (hours % 24 > 0) result += `${hours % 24}H `
-//     if (minutes % 60 > 0) result += `${minutes % 60}M `
-//     if (seconds % 60 > 0 || result === '') result += `${seconds % 60}S`
-//
-//     return result.trim()
-// }
 
-// Calculate daily finance stats
-export function calculateFinanceStats(transactionHistory) {
-    const dailyStats = {}
-    let totalSpent = 0
-    let totalDays = 0
 
-    for (const [timestamp, tx] of Object.entries(transactionHistory)) {
-        const date = new Date(parseInt(timestamp)).toISOString().split('T')[0]
-        const amount = parseFloat(tx.amount)
-
-        if (!dailyStats[date]) dailyStats[date] = { spent: 0, count: 0 }
-
-        dailyStats[date].spent += amount
-        dailyStats[date].count += 1
-        totalSpent += amount
+// ==============================
+// Daily Finance Statistics
+// ==============================
+export function calculateFinanceStats(historyData) {
+    if (!historyData || typeof historyData !== "object") {
+        return { average_daily_spent: "0", total_spent: "0", average_transactions: "0" };
     }
 
-    totalDays = Object.keys(dailyStats).length
-    const averageDailySpent = totalDays > 0 ? (totalSpent / totalDays).toFixed(2) : 0
+    const daily = {};
+    let total = 0;
+
+    for (const [timestamp, entry] of Object.entries(historyData)) {
+        const ts = Number(timestamp);
+        const d = new Date(ts);
+
+        if (isNaN(ts) || isNaN(d.getTime())) {
+            console.warn("Invalid timestamp:", timestamp);
+            continue;
+        }
+
+        const date = d.toISOString().split("T")[0];
+        const amount = Number(entry.amount || entry.cost || 0);
+
+        if (!daily[date]) daily[date] = { spent: 0, count: 0 };
+
+        daily[date].spent += amount;
+        daily[date].count++;
+        total += amount;
+    }
+
+    const days = Object.keys(daily).length || 1;
 
     return {
-        average_daily_spent: averageDailySpent,
-        total_spent: totalSpent.toFixed(2),
-        average_transactions: (Object.values(transactionHistory).length / totalDays).toFixed(2)
-    }
-}
-
-export class data {
+        average_daily_spent: (total / days).toFixed(2),
+        total_spent: total.toFixed(2),
+        average_transactions: (
+            Object.values(historyData).length / days
+        ).toFixed(2)
+    };
 }
