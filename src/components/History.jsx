@@ -9,6 +9,10 @@ import { useAuth } from "../context/AuthContext.jsx";
 export const History = () => {
     const { globalData } = useAuth();
 
+    if (!globalData || Object.keys(globalData).length === 0) {
+        return <p>No transaction history available.</p>;
+    }
+
     return (
         <>
             <div className="section-header">
@@ -19,23 +23,18 @@ export const History = () => {
             <p><i>Hover for more Info</i></p>
 
             <div className="finerd-history">
-                {Object.keys(globalData || {})
-                    .filter(key => !isNaN(Number(key)))
-                    .sort((a, b) => Number(b) - Number(a))
-                    .map((timestamp, index) => {
-
-                        const rawEntry = globalData[timestamp];
-                        console.log("RAW ENTRY:", timestamp, rawEntry);
+                {Object.entries(globalData)
+                    .filter(([key]) => !isNaN(Number(key)))
+                    .sort(([a], [b]) => Number(b) - Number(a))
+                    .map(([timestamp, rawEntry], index) => {
 
                         if (!rawEntry) return null;
 
-                        // NORMALIZE DATA HERE
+                        // Normalize the entry
                         const entry = {
                             category: rawEntry.category || rawEntry.name || "Unknown",
                             amount: Number(rawEntry.amount ?? rawEntry.cost ?? 0)
                         };
-
-                        console.log("NORMALIZED ENTRY:", entry);
 
                         const timeSince = timeSinceExpense(timestamp);
                         const impact = getSpendingImpact(entry.category);
